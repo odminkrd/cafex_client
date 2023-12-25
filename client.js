@@ -1,6 +1,8 @@
 var WebSocketClient = require('websocket').client;
-
+const halt = require("./workers/js/halt.js");
+const pcName =process.env.USERDOMAIN;
 var client = new WebSocketClient();
+
 
 client.on('connectFailed', function(error) {
     console.log('Connect Error: ' + error.toString());
@@ -19,35 +21,42 @@ client.on('connect', function(connection) {
     });
     connection.on('message', function(message) {
         const jsonMsg = JSON.parse(message.utf8Data);
-        const jsonCmd = jsonMsg[0];
-       switch (jsonCmd) {
-        case 'auth':
-            console.log('auth ok!');            
-            break;
-       
-       
+        if (jsonMsg.command =='mirrorCmd' ) {
+           mirrorRouter(jsonMsg.btn)
+        }
+     
+        console.log(jsonMsg);
+           
+       function mirrorRouter(command) {
+        switch (command) {
+            case "shutDev":
+                console.log('halt ok!');   
+                halt('halt'); 
+                break;
+            case "reboot":
+                console.log('reboot ok!');   
+                halt(); 
+                break; 
+            case "RU_ steam":
+                console.log('RU_ steam-ok!');   
+               // steam('RU_ steam'); 
+                break;    
+        
+            default:
+                break;
+        }
+           
+        
        }
-
-            console.log(jsonMsg[1]);
-       
     });
     
-    // function sendNumber() {
-    //     if (connection.connected) {
-    //         var number = Math.round(Math.random() * 0xFFFFFF);
-    //         connection.sendUTF(number.toString());
-    //         setTimeout(sendNumber, 1000);
-    //     }
-    // }
-    // sendNumber();
-
 
     function auth() {
         if (connection.connected) {
             var sendObj ={};
             sendObj.command = 'authPc';
-            sendObj.pcName = 'PC4';
-            sendObj.pcIp = '192.168.1.104';
+            sendObj.pcName = pcName;
+            sendObj.ip = '192.168.1.104';
     connection.send(JSON.stringify(sendObj));
 
         }
